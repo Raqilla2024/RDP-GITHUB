@@ -25,12 +25,20 @@ jobs:
           sudo systemctl restart xrdp
           sudo systemctl status xrdp --no-pager
 
-      - name: Setup Ngrok Tunnel
+      - name: Run Ngrok Tunnel
         env:
           NGROK_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
           ngrok authtoken $NGROK_TOKEN
-          ngrok tcp 3389 &
+          nohup ngrok tcp 3389 > ngrok.log 2>&1 &
+
+      - name: Wait for Ngrok to Start
+        run: sleep 10
+
+      - name: Debug Ngrok Status
+        run: |
+          ps aux | grep ngrok
+          cat ngrok.log || echo "Ngrok log not found"
 
       - name: Output RDP Address
         run: |
